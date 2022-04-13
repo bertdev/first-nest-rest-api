@@ -1,4 +1,7 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthDto } from './dto';
 import * as argon from 'argon2';
@@ -6,7 +9,7 @@ import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 
 @Injectable({})
 export class AuthService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   async signup(dto: AuthDto) {
     const hash = await argon.hash(dto.password);
@@ -14,20 +17,25 @@ export class AuthService {
       const user = await this.prisma.user.create({
         data: {
           email: dto.email,
-          password: hash
+          password: hash,
         },
         select: {
           id: true,
           email: true,
-          createdAt: true
-        }
+          createdAt: true,
+        },
       });
 
       return user;
     } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
+      if (
+        error instanceof
+        PrismaClientKnownRequestError
+      ) {
         if (error.code === 'P2002') {
-          throw new ForbiddenException('Credentials taken');
+          throw new ForbiddenException(
+            'Credentials taken',
+          );
         }
       }
 
@@ -36,25 +44,33 @@ export class AuthService {
   }
 
   async signin(dto: AuthDto) {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        email: dto.email
-      }
-    });
+    const user =
+      await this.prisma.user.findUnique({
+        where: {
+          email: dto.email,
+        },
+      });
 
     if (!user) {
-      throw new ForbiddenException('Credentials are incorrect');
+      throw new ForbiddenException(
+        'Credentials are incorrect',
+      );
     }
 
-    const isPasswordCorrect = await argon.verify(user.password, dto.password);
+    const isPasswordCorrect = await argon.verify(
+      user.password,
+      dto.password,
+    );
     if (!isPasswordCorrect) {
-      throw new ForbiddenException('Password incorrect');
+      throw new ForbiddenException(
+        'Password incorrect',
+      );
     }
 
     return {
       id: user.id,
       email: user.email,
-      createdAt: user.createdAt
-    }
+      createdAt: user.createdAt,
+    };
   }
 }
