@@ -22,6 +22,7 @@ export class AuthService {
           createdAt: true
         }
       });
+
       return user;
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
@@ -29,11 +30,31 @@ export class AuthService {
           throw new ForbiddenException('Credentials taken');
         }
       }
+
       throw error;
     }
   }
 
-  signin() {
-    return { message: 'I am signed in' };
+  async signin(dto: AuthDto) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email: dto.email
+      }
+    });
+
+    if (!user) {
+      throw new ForbiddenException('Credentials are incorrect');
+    }
+
+    const isPasswordCorrect = await argon.verify(user.password, dto.password);
+    if (!isPasswordCorrect) {
+      throw new ForbiddenException('Password incorrect');
+    }
+
+    return {
+      id: user.id,
+      email: user.email,
+      createdAt: user.createdAt
+    }
   }
 }
