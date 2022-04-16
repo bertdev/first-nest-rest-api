@@ -142,13 +142,42 @@ describe('App e2e', () => {
           .spec()
           .post('/auth/signin')
           .withBody(dto)
-          .expectStatus(200);
+          .expectStatus(200)
+          .stores('userAt', 'access_token');
       });
     });
   });
 
   describe('User', () => {
-    describe('Get me', () => { });
+    describe('Get me', () => {
+      it('Should get the current user', () => {
+        return pactum
+          .spec()
+          .get('/users/me')
+          .withHeaders({
+            Authorization: 'Bearer $S{userAt}'
+          })
+          .expectStatus(200);
+      });
+    });
+
+    it('Should throw an error if invalid token provided', () => {
+      return pactum
+        .spec()
+        .get('/users/me')
+        .withHeaders({
+          Authorization: 'Bearer kdjfsfjlsfksd90234092809sldkf'
+        })
+        .expectStatus(401);
+    });
+
+    it('Should throw an error if token not provided', () => {
+      return pactum
+        .spec()
+        .get('/user/me')
+        .expectStatus(404);
+    });
+
     describe('Edit user', () => { });
   });
 

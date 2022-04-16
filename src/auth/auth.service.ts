@@ -89,14 +89,14 @@ export class AuthService {
   async signToken(
     userId: number,
     email: string,
-  ): Promise<{ acess_token: string }> {
+  ): Promise<{ access_token: string }> {
     const payload = {
       sub: userId,
       email,
     };
 
     return {
-      acess_token: await this.jwt.signAsync(
+      access_token: await this.jwt.signAsync(
         payload,
         {
           expiresIn: '30m',
