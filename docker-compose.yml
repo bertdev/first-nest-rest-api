@@ -10,6 +10,16 @@ services:
       POSTGRES_DB: bookmark_api
     networks:
       - development
+  test-db:
+    image: postgres:13
+    ports:
+      - 5435:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: docker
+      POSTGRES_DB: bookmark_api_test
+    networks:
+      - development
 networks:
   development:
 
