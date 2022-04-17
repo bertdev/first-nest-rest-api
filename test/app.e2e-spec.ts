@@ -4,6 +4,7 @@ import * as pactum from 'pactum';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { AppModule } from '../src/app.module';
 import { AuthDto } from 'src/auth/dto';
+import { EditUserDto } from 'src/user/dto';
 
 describe('App e2e', () => {
   let app: INestApplication;
@@ -159,26 +160,46 @@ describe('App e2e', () => {
           })
           .expectStatus(200);
       });
+
+      it('Should throw an error if invalid token provided', () => {
+        return pactum
+          .spec()
+          .get('/users/me')
+          .withHeaders({
+            Authorization: 'Bearer kdjfsfjlsfksd90234092809sldkf'
+          })
+          .expectStatus(401);
+      });
+
+      it('Should throw an error if token not provided', () => {
+        return pactum
+          .spec()
+          .get('/users/me')
+          .expectStatus(401);
+      });
+
     });
 
-    it('Should throw an error if invalid token provided', () => {
-      return pactum
-        .spec()
-        .get('/users/me')
-        .withHeaders({
-          Authorization: 'Bearer kdjfsfjlsfksd90234092809sldkf'
-        })
-        .expectStatus(401);
-    });
 
-    it('Should throw an error if token not provided', () => {
-      return pactum
-        .spec()
-        .get('/user/me')
-        .expectStatus(404);
-    });
+    describe('Edit user', () => {
+      it('Should be able to edit a user', () => {
+        const dto: EditUserDto = {
+          firstName: 'Bert',
+          email: 'bert@bert.com'
+        };
 
-    describe('Edit user', () => { });
+        return pactum
+          .spec()
+          .patch('/users')
+          .withHeaders({
+            Authorization: 'Bearer $S{userAt}'
+          })
+          .withBody(dto)
+          .expectStatus(200)
+          .expectBodyContains(dto.firstName)
+          .expectBodyContains(dto.email);
+      });
+    });
   });
 
   describe('Bookmark', () => {
